@@ -22,12 +22,38 @@ export default function GbitExchangePro() {
   const [logs, setLogs] = useState<{msg: string, time: string, type: string}[]>([]);
   
   // LEITURA DE SALDOS
-  const { data: ethBalance } = useBalance({ address });
-  
-  const { data: gbitBalance, refetch: refetchGbit } = useBalance({ 
-    address, 
-    token: GBIT_ADDRESS as `0x${string}` 
-  });
+  // LEITURA DE SALDOS
+const { data: ethBalance } = useBalance({ address });
+
+// ✅ SALDO GBIT (ERC20 via balanceOf)
+const { data: gbitBalance, refetch: refetchGbit } = useReadContract({
+  address: GBIT_ADDRESS as `0x${string}`,
+  abi: [
+    ...ABI,
+    {
+      name: "balanceOf",
+      type: "function",
+      stateMutability: "view",
+      inputs: [{ name: "owner", type: "address" }],
+      outputs: [{ type: "uint256" }],
+    },
+  ],
+  functionName: "balanceOf",
+  args: address ? [address] : undefined,
+});
+
+// ✅ ETH DO CONTRATO
+const { data: contractEth, refetch: refetchEth } = useBalance({
+  address: GBIT_ADDRESS as `0x${string}`,
+});
+
+// ✅ RATE
+const { data: currentRate } = useReadContract({
+  address: GBIT_ADDRESS as `0x${string}`,
+  abi: ABI,
+  functionName: "rate",
+});
+
 
   const { data: contractEth, refetch: refetchEth } = useBalance({ 
     address: GBIT_ADDRESS as `0x${string}` 
