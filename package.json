@@ -1,14 +1,18 @@
 {
   "name": "create-web3gbit-forge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
+  "repository": {
+  "type": "git",
+  "url": "git+https://github.com/gislaine-programadora/web3gbit-cli.git"
+},
   "bin": {
     "create-web3gbit-forge": "./web3forge.js"
   },
   "scripts": {
     "dev": "pnpm --filter web dev",
-    "// --- COMANDO DA CLI --- //": "",
-    "build:cli": "tsc web3forge.ts --module nodenext --target esnext --moduleResolution nodenext --esModuleInterop --skipLibCheck",
+    "// --- COMANDO DA CLI FORGE --- //": "",
+    "build:cli": "pnpm exec tsc web3forge.ts --module nodenext --target esnext --moduleResolution nodenext --esModuleInterop --skipLibCheck",
     "link:cli": "pnpm build:cli && pnpm link --global",
     "// --- PROJETO --- //": "",
     "build:all": "cd packages/contracts && forge build && cd ../.. && wagmi generate",

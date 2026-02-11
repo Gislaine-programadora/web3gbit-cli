@@ -1,17 +1,29 @@
 {
-  "name": "web3gbit",
-  "version": "1.0.0",
+  "name": "web3gbit-cli",
+  "version": "1.0.1",
+  "repository": {
+  "type": "git",
+  "url": "git+https://github.com/gislaine-programadora/web3gbit-cli.git"
+},
+  "description": "CLI para gerenciar tokens GBIT",
   "type": "module",
   "bin": {
-    "web3gbit": "./admin-cli.ts"
+    "web3gbit": "./admin-cli.js"
   },
+  "scripts": {
+    "dev": "tsx admin-cli.ts",
+    "build": "tsc admin-cli.ts --target esnext --module nodenext --moduleResolution nodenext --esModuleInterop --skipLibCheck",
+    "link:cli": "npm run build && npm link"
+  },
+  "author": "Gislaine",
+  "license": "MIT",
   "dependencies": {
+    "viem": "^2.21.54",
     "dotenv": "^16.4.7",
-    "viem": "^2.22.17"
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
-    "@types/node": "^25.2.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
   }
 }

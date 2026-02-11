@@ -1,12 +1,12 @@
-#!/usr/bin/env node --loader ts-node/esm --no-warnings
+#!/usr/bin/env node
 
-import { createWalletClient, createPublicClient, http, parseAbi, formatEther, parseEther } from 'viem';
+import { createWalletClient, createPublicClient, http, formatEther, parseEther, Address } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia, mainnet } from 'viem/chains';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
-// 1. Configurações Iniciais
+// Configurações Iniciais
 dotenv.config();
 const PROFIT_FILE = './lucro.txt';
 
@@ -28,20 +28,21 @@ const yellow = "\x1b[33m";
 const red = "\x1b[31m";
 const green = "\x1b[32m";
 
-const ABI = parseAbi([
-  'function mint(address to, uint256 amount) external',
-  'function setRate(uint256 newRate) external',
-  'function rate() external view returns (uint256)',
-  'function totalSupply() external view returns (uint256)',
-  'function rescueETH() external',
-  'function burn(uint256 amount) external',
-  'function owner() external view returns (address)',
-  'function transferOwnership(address newOwner) external',
-  'function deposit() external payable',
-  'function withdraw(uint256 amount) external',
-  'function transfer(address to, uint256 amount) public returns (bool)',
-  'function balanceOf(address account) external view returns (uint256)'
-]);
+// ABI
+const ABI = [
+  { name: 'mint', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'address', name: 'to' }, { type: 'uint256', name: 'amount' }], outputs: [] },
+  { name: 'setRate', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'uint256', name: 'newRate' }], outputs: [] },
+  { name: 'rate', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
+  { name: 'totalSupply', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
+  { name: 'rescueETH', type: 'function', stateMutability: 'nonpayable', inputs: [], outputs: [] },
+  { name: 'burn', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'uint256', name: 'amount' }], outputs: [] },
+  { name: 'owner', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }] },
+  { name: 'deposit', type: 'function', stateMutability: 'payable', inputs: [], outputs: [] },
+  { name: 'withdraw', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'uint256', name: 'amount' }], outputs: [] },
+  { name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'address', name: 'to' }, { type: 'uint256', name: 'amount' }], outputs: [{ type: 'bool' }] },
+  { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ type: 'address', name: 'account' }], outputs: [{ type: 'uint256' }] },
+  { name: 'transferOwnership', type: 'function', stateMutability: 'nonpayable', inputs: [{ type: 'address', name: 'newOwner' }], outputs: [] }
+] as const;
 
 async function main() {
   // 🚀 LOGO WEB3 GBIT - VERSÃO CLEAN
@@ -57,24 +58,45 @@ ${bold}${lightBlue}│                                                          
 ${bold}${lightBlue}└──────────────────────────────────────────────────────────────────────┘${reset}
 `;
 
+// 1. Definições de Variáveis e Lógica de Rede
+  const pk = process.env.PRIVATE_KEY as Address;
+  const rpc = process.env.RPC_URL_SEPOLIA || process.env.RPC_URL || "";
+  const contractAddress = process.env.GBIT_ADDRESS as Address;
+  
+  // Detecta se é Mainnet ou Sepolia
+  const isMainnet = !!process.env.RPC_URL_MAINNET;
+  const selectedChain = isMainnet ? mainnet : sepolia;
+
+  // Define nomes e links para o visual
+  const networkName = isMainnet ? `${red}${bold}MAINNET${reset}` : `${yellow}${bold}SEPOLIA TESTNET${reset}`;
+  const explorerUrl = isMainnet ? "https://etherscan.io" : "https://sepolia.etherscan.io";
+
+  // 2. Agora sim, faz a exibição do Logo e Infos (Visual)
   console.log(textLogo);
   console.log(`${lightBlue}${'═'.repeat(70)}${reset}`);
   console.log(` ${blue}${bold}🚀 WEB3 GBIT${reset} ${white}||${reset} ${cyan}FORGE ENGINE ACTIVE${reset}`);
   console.log(`${lightBlue}${'═'.repeat(70)}${reset}`);
+  console.log(` ${white}🌐 REDE: ${networkName} ${reset}`);
+  console.log(` ${white}🔗 EXPLORER: ${cyan}${explorerUrl}/address/${contractAddress}${reset}`);
+  console.log(`${lightBlue}${'═'.repeat(70)}${reset}\n`);
 
-  if (!process.env.PRIVATE_KEY || !process.env.RPC_URL || !process.env.GBIT_ADDRESS) {
-    console.error(`\n${red}❌ Erro: Verifique seu arquivo .env (PRIVATE_KEY, RPC_URL, GBIT_ADDRESS)${reset}`);
+  // 3. Verificação de Segurança (Variáveis críticas)
+  if (!pk || !rpc || !contractAddress) {
+    console.error(`\n${red}❌ Erro Fatal: Verifique seu arquivo .env (PRIVATE_KEY, RPC_URL, GBIT_ADDRESS)${reset}\n`);
     return;
   }
 
-  const chain = process.env.NETWORK === 'mainnet' ? mainnet : sepolia;
-  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
-  const client = createWalletClient({ account, chain, transport: http(process.env.RPC_URL) });
-  const publicClient = createPublicClient({ chain, transport: http(process.env.RPC_URL) });
+  // 4. Configuração dos Clientes Viem
+  const account = privateKeyToAccount(pk);
+  const publicClient = createPublicClient({ chain: selectedChain, transport: http(rpc) });
+  const client = createWalletClient({ account, chain: selectedChain, transport: http(rpc) });
 
+  // 5. Captura de Argumentos do Terminal
   const command = process.argv[2];
   const value = process.argv[3];
-  const contractAddress = process.env.GBIT_ADDRESS as `0x${string}`;
+  const amountArg = process.argv[4];
+
+  // 6. Execução dos Comandos
 
   switch (command) {
     case 'welcome':
@@ -148,7 +170,7 @@ ${bold}${lightBlue}└───────────────────�
         console.log(`  Alvo: ${white}${walletAddress}${reset}`);
         
         const balance = await publicClient.getBalance({ 
-          address: walletAddress as `0x${string}` 
+          address: walletAddress as Address
         });
         
         console.log(`  ${cyan}${'═'.repeat(45)}${reset}`);
@@ -173,7 +195,7 @@ ${bold}${lightBlue}└───────────────────�
           address: contractAddress,
           abi: ABI,
           functionName: 'balanceOf',
-          args: [tokenWallet as `0x${string}`]
+          args: [tokenWallet as Address]
         }) as bigint;
 
         console.log(`\n  ${bold}${yellow}💎 SALDO DE TOKENS GBIT${reset}`);
@@ -188,24 +210,38 @@ ${bold}${lightBlue}└───────────────────�
       return;
 
     case 'balance-eth':
-      const ethWallet = process.argv[3] || process.env.GBIT_ADDRESS || "";
-
-      if (!ethWallet) {
-        console.log(`\n  ${red}❌ Informe o endereço ou configure no .env${reset}\n`);
-        return;
-      }
+      // Tenta: 1. Argumento do terminal | 2. Sua carteira do PK | 3. Endereço fixo no .env
+      const ethWallet = (process.argv[3] || account.address || process.env.WALLET_ADDRESS) as Address;
 
       try {
-        const balance = await publicClient.getBalance({ address: ethWallet as `0x${string}` });
+        const balance = await publicClient.getBalance({ address: ethWallet });
         console.log(`\n  ${bold}${lightBlue}⛽ SALDO NATIVO (ETH)${reset}`);
         console.log(`  ${cyan}${'═'.repeat(45)}${reset}`);
         console.log(`  Carteira: ${white}${ethWallet}${reset}`);
-        console.log(`  Saldo   : ${green}${formatEther(balance)} ETH${reset}`);
+        console.log(`  Saldo   : ${bold}${green}${formatEther(balance)}${reset} ETH`);
         console.log(`  ${cyan}${'═'.repeat(45)}${reset}\n`);
       } catch (e: any) {
-        console.log(`\n  ${red}❌ Erro ao consultar ETH.${reset}\n`);
+        console.log(`\n  ${red}❌ Erro ao consultar ETH: Verifique a conexão com a rede.${reset}\n`);
       }
-      return;
+      break; // Use break em vez de return para manter o padrão do switch
+
+    
+
+    // 3. Transferir dono do contrato (Cuidado aqui!)
+    case 'transfer-ownership':
+      if (!value) return console.log(yellow + "Uso: web3gbit transfer-ownership <novo_dono>" + reset);
+      try {
+        const hOwn = await client.writeContract({
+          address: contractAddress,
+          abi: ABI,
+          functionName: 'transferOwnership',
+          args: [value as Address],
+          chain: selectedChain,
+          account
+        });
+        console.log(green + "👑 Propriedade transferida! Hash: " + hOwn + reset);
+      } catch (e: any) { console.error(red + "Falha na transferência: " + e.message + reset); }
+      break;
     
     case 'market-bot':
       console.log(`\n  ${bold}${cyan}🤖 MARKET MAKER ATIVO!${reset}`);
@@ -241,32 +277,38 @@ ${bold}${lightBlue}└───────────────────�
 
     case 'transfer':
       const toAddress = process.argv[3];
-      const amount = process.argv[4];
+      const amountTransfer = process.argv[4];
 
-      if (!toAddress || !amount) {
+      if (!toAddress || !amountTransfer) {
         console.log(`\n  ${bold}${red}❌ Erro: Faltam parâmetros!${reset}`);
-        console.log(`  Uso: ${cyan}web3gbit transfer <endereço> <quantidade>${reset}`);
-        console.log(`  Exemplo: ${white}web3gbit transfer 0xabc... 100${reset}\n`);
+        console.log(`  ${bold}Uso:${reset} ${cyan}web3gbit transfer <endereço> <quantidade>${reset}`);
+        console.log(`  ${bold}Exemplo:${reset} ${white}web3gbit transfer 0xabc... 100${reset}\n`);
+        return;
+      }
+
+      if (!toAddress.startsWith('0x') || toAddress.length !== 42) {
+        console.log(`\n  ${red}❌ Endereço inválido! Use formato: 0x...${reset}\n`);
         return;
       }
 
       try {
         console.log(`\n  ${bold}${lightBlue}📤 INICIANDO TRANSFERÊNCIA...${reset}`);
-        console.log(`  Destino : ${white}${toAddress}${reset}`);
-        console.log(`  Quantia : ${white}${amount} GBIT${reset}`);
+        console.log(`  ${cyan}${'═'.repeat(50)}${reset}`);
+        console.log(`  ${bold}Destino :${reset} ${white}${toAddress}${reset}`);
+        console.log(`  ${bold}Quantia :${reset} ${white}${amountTransfer} GBIT${reset}`);
+        console.log(`  ${cyan}${'═'.repeat(50)}${reset}`);
 
         const hTransfer = await client.writeContract({
           address: contractAddress,
           abi: ABI,
           functionName: 'transfer',
-          args: [toAddress as `0x${string}`, parseEther(amount)]
+          args: [toAddress as Address, parseEther(amountTransfer)]
         });
 
-        console.log(`  ${cyan}═`.repeat(50) + reset);
-        console.log(`  ${green}${bold}✅ TRANSFERÊNCIA CONCLUÍDA!${reset}`);
-        console.log(`  ${bold}Hash da TX:${reset} ${cyan}${hTransfer}${reset}`);
-        console.log(`  ${bold}Explorador:${reset} ${white}https://sepolia.etherscan.io/tx/${hTransfer}${reset}`);
-        console.log(`  ${cyan}═`.repeat(50) + reset + `\n`);
+        console.log(`\n  ${green}${bold}✅ TRANSFERÊNCIA CONCLUÍDA!${reset}`);
+        console.log(`  ${bold}Hash TX:${reset} ${cyan}${hTransfer}${reset}`);
+        console.log(`  ${bold}Explorer:${reset} ${white}https://sepolia.etherscan.io/tx/${hTransfer}${reset}`);
+        console.log(`  ${cyan}${'═'.repeat(50)}${reset}\n`);
 
       } catch (e: any) {
         console.log(`\n  ${red}❌ Falha na transferência:${reset}`);
@@ -317,8 +359,7 @@ ${bold}${lightBlue}└───────────────────�
       return;
 
     case 'mint':
-      const amountMint = process.argv[4];
-      if (!value || !amountMint) { 
+      if (!value || !amountArg) { 
         console.log(`${red}❌ Use: mint <addr> <qtd>${reset}`); 
         return; 
       }
@@ -327,7 +368,7 @@ ${bold}${lightBlue}└───────────────────�
           address: contractAddress, 
           abi: ABI, 
           functionName: 'mint', 
-          args: [value as `0x${string}`, parseEther(amountMint)] 
+          args: [value as Address, parseEther(amountArg)] 
         });
         console.log(`${green}✅ TX: ${hMint}${reset}`);
       } catch (e: any) {
@@ -384,6 +425,34 @@ ${bold}${lightBlue}└───────────────────�
         console.error(`${red}❌ Erro:${reset}`, e.message);
       }
       return;
+
+      case 'history':
+      console.log(`\n${cyan}📜 Buscando histórico de movimentações...${reset}`);
+      try {
+        const logs = await publicClient.getLogs({
+          address: contractAddress,
+          event: {
+            type: 'event',
+            name: 'Transfer',
+            inputs: [
+              { type: 'address', name: 'from', indexed: true },
+              { type: 'address', name: 'to', indexed: true },
+              { type: 'uint256', name: 'value' }
+            ]
+          },
+          fromBlock: 0n // Usar 0n é mais seguro no Viem para "earliest"
+        });
+        console.log(`✅ Total de ${bold}${logs.length}${reset} transações encontradas.`);
+        logs.slice(-3).forEach(l => {
+          const val = (l.args as any).value;
+          console.log(`🔹 TX: ${formatEther(val)} GBIT -> ${l.transactionHash?.slice(0,10)}...`);
+        });
+      } catch (e: any) { 
+        console.error(red + "Erro no histórico: " + e.message + reset); 
+      }
+      break;
+
+
 
     default:
       console.log(`\n${red}❌ Comando inválido.${reset} Use: ${bold}web3gbit help${reset}\n`);
