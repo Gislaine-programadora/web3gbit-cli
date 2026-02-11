@@ -165,33 +165,59 @@ export default function GbitExchangePro() {
           </div>
         )}
       </div>
+      
+      <!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div id="tradingview"></div>
+  <script
+    type="text/javascript"
+    src="https://s3.tradingview.com/tv.js"
+  ></script>
+  <script type="text/javascript">
+    new TradingView.widget({
+      autosize: true,
+      symbol: "PYTH:BTCUSD",
+      interval: "D",
+      timezone: "Etc/UTC",
+      theme: "light",
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#f1f3f6",
+      enable_publishing: false,
+      allow_symbol_change: true,
+      container_id: "tradingview",
+    });
+  </script>
+</div>
 
-      {/* ACTIONS */}
-      <div style={{ display: "flex", gap: "15px" }}>
-        <button 
-          disabled={!isConnected || isPending || isConfirming} 
-          onClick={handleBuy}
-          style={{ 
-            flex: 1, padding: "18px", borderRadius: "10px", border: "none", 
-            background: "#0ecb81", color: "#fff", fontWeight: "bold", fontSize: "16px",
-            cursor: "pointer", transition: "0.2s", opacity: (isPending || isConfirming) ? 0.6 : 1 
-          }}
-        >
-          {isPending || isConfirming ? "PROCESSANDO..." : "COMPRAR (0.002 ETH)"}
-        </button>
-        <button 
-          disabled={!isConnected || isPending || isConfirming} 
-          onClick={handleSell}
-          style={{ 
-            flex: 1, padding: "18px", borderRadius: "10px", border: "none", 
-            background: "#f6465d", color: "#fff", fontWeight: "bold", fontSize: "16px",
-            cursor: "pointer", transition: "0.2s", opacity: (isPending || isConfirming) ? 0.6 : 1 
-          }}
-        >
-          {isPending || isConfirming ? "PROCESSANDO..." : "VENDER (0.5 GBIT)"}
-        </button>
-      </div>
-
+  <div class="tradingview-widget-container">
+  <div id="tradingview"></div>
+  <script
+    type="text/javascript"
+    src="https://s3.tradingview.com/tv.js"
+  ></script>
+  <script type="text/javascript">
+    new TradingView.widget({
+      // 1. Mude o autosize para false
+      "autosize": false,
+      
+      // 2. Defina a largura (pode ser em pixels ou porcentagem)
+      "width": "75%", 
+      "height": 400,
+      
+      "symbol": "PYTH:BTCUSD",
+      "interval": "D",
+      "timezone": "Etc/UTC",
+      "theme": "light",
+      "style": "1",
+      "locale": "en",
+      "toolbar_bg": "#f1f3f6",
+      "enable_publishing": false,
+      "allow_symbol_change": true,
+      "container_id": "tradingview"
+    });
+  </script>
+</div>
       {/* ADMIN PANEL */}
       {isAdmin && (
         <div style={{ marginTop: "20px", padding: "15px", borderRadius: "12px", border: "1px dashed #F3BA2F", textAlign: "center" }}>
