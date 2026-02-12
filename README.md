@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/create-web3gbit-forge.svg)](https://www.npmjs.com/package/create-web3gbit-forge)
+
 
 <p align="center">
   <img width="324" height="324" alt="image" src="https://github.com/user-attachments/assets/10649ace-2263-4aa1-b79a-0581a3fb638a" />
@@ -62,6 +62,7 @@ Você pode encontrar este pacote no registro oficial do NPM:` 📦
 
 [![npm version](https://img.shields.io/npm/v/web3gbit-cli.svg?style=flat-square)](https://www.npmjs.com/package/web3gbit-cli)
 
+[![npm version](https://badge.fury.io/js/create-web3gbit-forge.svg)](https://www.npmjs.com/package/create-web3gbit-forge)
 
 ## 🛠️ Instalação ## ⚡ Quick Start
 
