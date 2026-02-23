@@ -85,9 +85,9 @@ npm init create-web3gbit-forge my-project
 ```
 
 
-
+  <p align="center">
   <img width="461" height="200" alt="image" src="https://github.com/user-attachments/assets/e4ea95b8-f932-4a43-bfd2-d88a530dd251" />
-
+</p>
 
  
   ``
