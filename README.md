@@ -315,7 +315,7 @@ MIT License - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 👩‍💻 Desenvolvido por
 
-**Gislaine** - [GitHub](https://github.com/gislaine)
+**Gislaine** - [GitHub](https://github.com/gislaine-programadora)
 
 ---
 
